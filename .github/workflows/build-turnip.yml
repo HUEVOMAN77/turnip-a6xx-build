@@ -66,8 +66,9 @@ jobs:
       - name: Configurar Mesa
         run: |
           set -e
+          cd mesa
           meson setup build \
-            --cross-file android-aarch64.txt \
+            --cross-file "${GITHUB_WORKSPACE}/android-aarch64.txt" \
             --prefix "${PWD}/install" \
             --libdir lib \
             -Dbuildtype=release \
@@ -83,7 +84,7 @@ jobs:
             -Dwerror=false
 
       - name: Compilar
-        run: ninja -C build -j "$(nproc)"
+        run: ninja -C mesa/build -j "$(nproc)"
 
       - name: Empaquetar driver
         run: bash scripts/empacar.sh

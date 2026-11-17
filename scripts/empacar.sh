@@ -4,7 +4,7 @@
 set -euo pipefail
 
 TOOLCHAIN="${NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64"
-SO="build/src/freedreno/vulkan/libvulkan_freedreno.so"
+SO="mesa/build/src/freedreno/vulkan/libvulkan_freedreno.so"
 
 if [ ! -f "${SO}" ]; then
   echo "No se genero ${SO}" >&2
