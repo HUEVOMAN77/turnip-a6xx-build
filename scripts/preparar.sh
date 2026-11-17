@@ -35,10 +35,9 @@ cat > android-aarch64.txt <<EOF
 ar = '${TOOLCHAIN}/bin/llvm-ar'
 c = ['${TOOLCHAIN}/bin/${ARCH}${API}-clang', '-fno-exceptions', '-fno-unwind-tables', '-fno-asynchronous-unwind-tables']
 cpp = ['${TOOLCHAIN}/bin/${ARCH}${API}-clang++', '-fno-exceptions', '-fno-unwind-tables', '-fno-asynchronous-unwind-tables', '--start-no-unused-arguments', '-static-libstdc++', '--end-no-unused-arguments']
-c_ld = '${TOOLCHAIN}/bin/ld.lld'
-cpp_ld = '${TOOLCHAIN}/bin/ld.lld'
 strip = '${TOOLCHAIN}/bin/llvm-strip'
 pkg-config = 'pkgconf'
+cmake = 'cmake'
 
 [host_machine]
 system = 'android'
