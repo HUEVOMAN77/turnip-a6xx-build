@@ -1,0 +1,96 @@
+name: Compilar Turnip a6xx para el Nova 10
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+env:
+  MESA_VERSION: '26.2.7'
+  ANDROID_API: '31'
+
+jobs:
+  build:
+    name: Turnip aarch64-android
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - name: Repositorio
+        uses: actions/checkout@v4
+
+      - name: Dependencias de compilacion
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            bison flex ninja-build pkgconf ccache git curl unzip zip \
+            python3 python3-pip python3-setuptools python3-mako python3-yaml python3-ply \
+            zlib1g-dev libexpat1-dev cmake ca-certificates
+          pip3 install --break-system-packages 'meson>=1.5' ninja
+
+      - name: Descargar Mesa
+        run: |
+          set -e
+          curl -L --retry 3 --max-time 900 -o mesa.tar.xz \
+            "https://archive.mesa3d.org/mesa-${MESA_VERSION}.tar.xz"
+          mkdir -p mesa
+          tar -xf mesa.tar.xz -C mesa --strip-components=1
+          echo "Mesa ${MESA_VERSION} descargada"
+
+      - name: Descargar NDK
+        run: |
+          set -e
+          encontrado=0
+          for v in r28 r27 r26; do
+            echo "Probando NDK ${v}"
+            if curl -fL --retry 2 --max-time 1200 -o ndk.zip \
+                "https://dl.google.com/android/repository/android-ndk-${v}-linux.zip"; then
+              NDK_VERSION="${v}"
+              encontrado=1
+              break
+            fi
+          done
+          test "${encontrado}" = 1
+          unzip -q ndk.zip -d "${RUNNER_TEMP}"
+          echo "NDK_ROOT=${RUNNER_TEMP}/android-ndk-${NDK_VERSION}" >> "${GITHUB_ENV}"
+          echo "NDK ${NDK_VERSION} listo"
+
+      - name: Preparar sysroot y cross file
+        run: bash scripts/preparar.sh
+
+      - name: Configurar Mesa
+        run: |
+          set -e
+          meson setup build \
+            --cross-file android-aarch64.txt \
+            --prefix "${PWD}/install" \
+            --libdir lib \
+            -Dbuildtype=release \
+            -Dbuild-tests=false \
+            -Dplatforms=android \
+            -Dgallium-drivers=[] \
+            -Dvulkan-drivers=freedreno \
+            -Dllvm=disabled \
+            -Dzstd=disabled \
+            -Dlibunwind=disabled \
+            -Dtools=[] \
+            -Dspirv-tools=disabled \
+            -Dwerror=false
+
+      - name: Compilar
+        run: ninja -C build -j "$(nproc)"
+
+      - name: Empaquetar driver
+        run: bash scripts/empacar.sh
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: turnip-a6xx-${{ env.MESA_VERSION }}
+          path: dist/*.zip
+          if-no-files-found: error
