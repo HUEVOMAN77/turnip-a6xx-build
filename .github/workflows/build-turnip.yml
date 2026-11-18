@@ -79,6 +79,11 @@ jobs:
             -Dplatform-sdk-version=${ANDROID_API} \
             -Db_lundef=false \
             -Dfreedreno-kmds=kgsl \
+            -Degl=disabled \
+            -Dgles1=disabled \
+            -Dgles2=disabled \
+            -Dopengl=disabled \
+            -Dglx=disabled \
             -Dgallium-drivers=[] \
             -Dvulkan-drivers=freedreno \
             -Dllvm=disabled \
