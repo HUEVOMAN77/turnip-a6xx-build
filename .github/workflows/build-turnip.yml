@@ -75,6 +75,9 @@ jobs:
             -Dbuildtype=release \
             -Dbuild-tests=false \
             -Dplatforms=android \
+            -Dandroid-stub=true \
+            -Dplatform-sdk-version=${ANDROID_API} \
+            -Db_lundef=false \
             -Dgallium-drivers=[] \
             -Dvulkan-drivers=freedreno \
             -Dllvm=disabled \
