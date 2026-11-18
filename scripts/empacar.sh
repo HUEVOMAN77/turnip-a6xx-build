@@ -15,6 +15,23 @@ mkdir -p dist
 cp "${SO}" dist/vulkan.ad07XX.so
 "${TOOLCHAIN}/bin/llvm-strip" --strip-unneeded dist/vulkan.ad07XX.so
 
+# AdrenoTools carga la libreria por SONAME: Mesa la compila como
+# libvulkan_freedreno.so y hay que renombrarla a vulkan.ad07xx.so (minusculas).
+python3 - <<'PY'
+import pathlib
+p = pathlib.Path("dist/vulkan.ad07XX.so")
+d = bytearray(p.read_bytes())
+old, new = b"libvulkan_freedreno.so", b"vulkan.ad07xx.so"
+i = d.find(old)
+if i < 0:
+    raise SystemExit("no se encontro el SONAME original")
+if d.count(old) != 1:
+    raise SystemExit("el SONAME aparece mas de una vez")
+d[i:i + len(old)] = new + b"\x00" * (len(old) - len(new))
+p.write_bytes(bytes(d))
+print("SONAME parcheado a", new.decode())
+PY
+
 VERSION_VULKAN="$(strings -a dist/vulkan.ad07XX.so | grep -m1 -o 'Vulkan 1\.[0-9]\+\.[0-9]\+' || true)"
 if [ -z "${VERSION_VULKAN}" ]; then
   VERSION_VULKAN="Vulkan 1.3.280"
@@ -23,7 +40,7 @@ fi
 cat > dist/meta.json <<EOF
 {
   "schemaVersion": 1,
-  "name": "Turnip a6xx para Nova 10 - Mesa ${MESA_VERSION}",
+  "name": "Turnip a6xx Nova 10 - Mesa ${MESA_VERSION}",
   "description": "Compilado desde el codigo de Mesa para el Adreno 642L (a6xx) del Nova 10.",
   "author": "HUEVOMAN77",
   "packageVersion": "${MESA_VERSION}",
