@@ -78,6 +78,7 @@ jobs:
             -Dandroid-stub=true \
             -Dplatform-sdk-version=${ANDROID_API} \
             -Db_lundef=false \
+            -Dfreedreno-kmds=kgsl \
             -Dgallium-drivers=[] \
             -Dvulkan-drivers=freedreno \
             -Dllvm=disabled \
