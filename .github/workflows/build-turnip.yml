@@ -82,7 +82,7 @@ jobs:
             -Degl=disabled \
             -Dgles1=disabled \
             -Dgles2=disabled \
-            -Dopengl=disabled \
+            -Dopengl=false \
             -Dglx=disabled \
             -Dgallium-drivers=[] \
             -Dvulkan-drivers=freedreno \
